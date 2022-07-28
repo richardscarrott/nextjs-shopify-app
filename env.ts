@@ -6,10 +6,13 @@ import { object, assert, and, string, minLength } from "ok-computer";
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
+      // Public
       NEXT_PUBLIC_HOST_NAME?: string;
       NEXT_PUBLIC_SHOPIFY_API_KEY?: string;
+      NEXT_PUBLIC_SHOPIFY_SCOPE?: string;
+
+      // Private
       SHOPIFY_API_SECRET?: string;
-      SHOPIFY_SCOPE?: string;
       SESSION_COOKIE_SECRET?: string;
     }
   }
@@ -25,14 +28,6 @@ export const privateEnv = {
   SESSION_COOKIE_SECRET: process.env.SESSION_COOKIE_SECRET,
 } as PrivateEnv;
 
-if (typeof window === "undefined") {
-  const validator = object({
-    SHOPIFY_API_SECRET: and(string, minLength(1)),
-    SESSION_COOKIE_SECRET: and(string, minLength(1)),
-  });
-  assert(validator(privateEnv));
-}
-
 interface PublicEnv {
   readonly HOST_NAME: string;
   readonly SHOPIFY_API_KEY: string;
@@ -44,6 +39,14 @@ export const publicEnv = {
   SHOPIFY_API_KEY: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY,
   SHOPIFY_SCOPE: process.env.NEXT_PUBLIC_SHOPIFY_SCOPE,
 } as PublicEnv;
+
+if (typeof window === "undefined") {
+  const validator = object({
+    SHOPIFY_API_SECRET: and(string, minLength(1)),
+    SESSION_COOKIE_SECRET: and(string, minLength(1)),
+  });
+  assert(validator(privateEnv));
+}
 
 const validator = object({
   HOST_NAME: and(string, minLength(1)),

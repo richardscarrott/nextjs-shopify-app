@@ -1,7 +1,7 @@
 import type { GetServerSideProps, NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
-import { compareScopes } from "../utils/compare-scopes";
+import { AuthScopes } from "../utils/scopes";
 import { find } from "../utils/shop-storage";
 import { Page } from "../components/lib/page";
 import { publicEnv } from "../env";
@@ -19,7 +19,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { notFound: true };
   }
   const shop = await find(context.query.shop);
-  if (!shop || !compareScopes(publicEnv.SHOPIFY_SCOPE, shop.scope)) {
+  if (!shop || !new AuthScopes(publicEnv.SHOPIFY_SCOPE).equals(shop.scope)) {
     return {
       redirect: {
         destination: `/auth?shop=${context.query.shop}&host=${context.query.host}`,

@@ -1,6 +1,6 @@
 import type { NextPage } from "next";
 import { publicEnv } from "../../env";
-import { nonce } from "../../utils/nonce";
+import { shopifyToken } from "../../utils/shopify-token";
 import { withShopifyOAuthSessionSsr } from "../../utils/with-oauth-session";
 
 /**
@@ -20,24 +20,18 @@ export const getServerSideProps = withShopifyOAuthSessionSsr(
       return { notFound: true };
     }
 
-    const state = nonce();
-    context.req.session.state = state;
-    await context.req.session.save();
+    const nonce = shopifyToken.generateNonce();
 
-    const authUrl = new URL(
-      `https://${context.query.shop}/admin/oauth/authorize`
-    );
-    authUrl.searchParams.append("client_id", publicEnv.SHOPIFY_API_KEY);
-    authUrl.searchParams.append("scope", publicEnv.SHOPIFY_SCOPE);
-    authUrl.searchParams.append(
-      "redirect_uri",
-      `${publicEnv.HOST_NAME}/auth/callback`
-    );
-    authUrl.searchParams.append("state", state);
+    context.req.session.state = nonce;
+    await context.req.session.save();
 
     return {
       redirect: {
-        destination: authUrl.toString(),
+        destination: shopifyToken.generateAuthUrl(
+          context.query.shop,
+          publicEnv.SHOPIFY_SCOPE,
+          nonce
+        ),
         permanent: false,
       },
     };
