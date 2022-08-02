@@ -3,7 +3,7 @@ import path from "path";
 
 // NOTE: This is expected to read / write to your application DB.
 
-interface ShopRecord {
+export interface ShopRecord {
   readonly shop: string;
   readonly accessToken: string;
   readonly scope: string;

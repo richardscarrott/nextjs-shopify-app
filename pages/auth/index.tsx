@@ -3,8 +3,10 @@ import React, { useEffect } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { Redirect } from "@shopify/app-bridge/actions";
 import { isShopifyEmbedded } from "@shopify/app-bridge-utils";
-import { Page } from "../../components/lib/page";
+import { AppBridgeProvider } from "../../components/lib/provider";
 import { publicEnv } from "../../env";
+import { useSsr, wrapSsr } from "../../utils/use-ssr";
+import { withShop } from "../../middleware/ssr";
 
 /**
  * Kicks off the Shopify OAuth flow, making sure we're in the top frame
@@ -15,28 +17,21 @@ interface Props {
   readonly host: string;
 }
 
-export const getServerSideProps: GetServerSideProps<Props> = async (
-  context
-) => {
-  if (
-    typeof context.query.shop !== "string" ||
-    typeof context.query.host !== "string"
-  ) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      redirectUrl: `${publicEnv.HOST_NAME}/auth/preauth?shop=${context.query.shop}&host=${context.query.host}`,
-      host: context.query.host,
-    },
-  };
-};
+export const getServerSideProps: GetServerSideProps<Props> = wrapSsr(
+  useSsr(withShop(true), (ctx, { shop, host }) => {
+    return {
+      props: {
+        redirectUrl: `${publicEnv.HOST_NAME}/auth/preauth?shop=${shop}&host=${host}`,
+        host,
+      },
+    };
+  })
+);
 
 const AuthPage: NextPage<Props> = (props) => (
-  <Page host={props.host}>
+  <AppBridgeProvider host={props.host}>
     <Auth {...props} />
-  </Page>
+  </AppBridgeProvider>
 );
 
 export default AuthPage;
