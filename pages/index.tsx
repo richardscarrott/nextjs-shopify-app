@@ -37,7 +37,7 @@ export const getServerSideProps: GetServerSideProps<Props> = wrapSsr(
 
 const HomePage: NextPage<Props> = (props) => {
   return (
-    <Provider host={props.host}>
+    <Provider embed host={props.host}>
       <Home {...props} />
     </Provider>
   );
